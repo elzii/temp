@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>CSS Donut Chart</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="style.css"> -->
+
+  <style>
+    path.slice{
+      stroke-width:2px;
+    }
+
+    polyline{
+      opacity: .3;
+      stroke: black;
+      stroke-width: 2px;
+      fill: none;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    .relative {
+      position: relative;
+    }
+
+    #video {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default" role="navigation" style="">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">
+        <span>🇨🇳 Bruce Lee's Kung Fu Meme-Generator 420 🚂🚃🚃🚃</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="wrap">
+  <div class="container">
+    
+    <!-- <svg id="mySvg" width="80" height="80">
+      <defs id="mdef">
+        <pattern id="image" x="0" y="0" height="100" width="100">
+          <image x="0" y="0" width="100" height="100" xlink:href="http://i.imgur.com/Q6Wu2cK.jpg"></image>
+        </pattern>
+      </defs>
+    </svg> -->
+
+    <div class="row">
+      
+
+      <div class="col-lg-5" style="padding-right: 40px;">
+        <form id="form" class="">
+
+          <div class="form-group activity row">
+            <div class="col-md-8">
+              <input type="text" class="form-control input--activity" placeholder="Activity" value="Sleep">
+            </div>
+            <div class="col-md-4">
+              <input type="number" class="form-control input--hours" placeholder="Hours" value="6">
+            </div>
+          </div>
+
+          <div class="form-group activity row">
+            <div class="col-md-8">
+              <input type="text" class="form-control input--activity" placeholder="Activity" value="Work">
+            </div>
+            <div class="col-md-4">
+              <input type="number" class="form-control input--hours" placeholder="Hours" value="8">
+            </div>
+          </div>
+
+          <div class="form-group activity row">
+            <div class="col-md-8">
+              <input type="text" class="form-control input--activity" placeholder="Activity" value="Leisure">
+            </div>
+            <div class="col-md-4">
+              <input type="number" class="form-control input--hours" placeholder="Hours" value="4">
+            </div>
+          </div>
+
+          <div class="form-group activity row">
+            <div class="col-md-8">
+              <input type="text" class="form-control input--activity" placeholder="Activity" value="Commute">
+            </div>
+            <div class="col-md-4">
+              <input type="number" class="form-control input--hours" placeholder="Hours" value="1">
+            </div>
+          </div>
+
+          <div class="form-group activity row">
+            <div class="col-md-8">
+              <input type="text" class="form-control input--activity" placeholder="Activity" value="Errands">
+            </div>
+            <div class="col-md-4">
+              <input type="number" class="form-control input--hours" placeholder="Hours" value="4">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <video id="video" autoplay></video>
+            <button id="snap" class="btn btn-success">Take Photo</button>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+
+        </form>
+
+        
+        <canvas id="canvas" style="display:none" width="640" height="480"></canvas>
+
+      </div>
+      <div class="col-lg-7 relative">
+        <svg id="chart" viewBox="0 0 400 400" perserveAspectRatio="xMinYMid"></svg>
+        <!-- <div id="chart"></div> -->
+      </div>
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+
+
+<script   src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+
+
+
+<script>
+
+var config = {
+  width: 400,
+  height: 400,
+  radius: 200,
+  avatar: {
+  size: 320
+  }
+}
+
+window.dataPool = {
+  value1: 50
+};
+
+var colors = d3.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+
+
+var chart_data = [{
+  label: "One",
+  value: 50
+}, {
+  label: "Two",
+  value: 30
+}, {
+  label: "Three",
+  value: 100
+}]
+
+
+
+/**
+ * Build Chart
+ * 
+ * @param  {Object} data 
+ */
+function buildChart(data, img_url) {
+
+  var img_url = img_url ? img_url : 'http://i.imgur.com/ZYGQfdP.png';
+
+
+  var pie = d3.layout.pie().value(function(d) {
+    return d.value;
+  })
+
+  var arc = d3.svg.arc()
+    .innerRadius(config.radius - 40)
+    .outerRadius(config.radius)
+
+  var svg = d3.select('#chart').append('svg')
+    .attr('width', config.width)
+    .attr('height', config.height)
+    .append('g')
+    .attr('transform', 'translate(' + (config.width - config.radius) + ',' + (config.height - config.radius) + ')')
+    .selectAll('path')
+    .data(pie(data))
+    .enter()
+    .append('g')
+    .attr('class', 'slice')
+
+  var slices1 = d3.selectAll('g.slice')
+    .append('path')
+    .attr('fill', function(d, range) {
+      return colors(range);
+    })
+    .attr('d', arc)
+
+
+
+  var defs = svg.append("defs").attr("id", "imgdefs")
+
+  var pattern = defs.append("pattern")
+        .attr("id", "imagePattern")
+        .attr("height", 1)
+        .attr("width", 1)
+        .attr("x", "0")
+        .attr("y", "0")
+
+
+  var pattern = defs.append("svg:pattern")
+      .attr("id", "grump_avatar")
+      .attr("width", config.avatar.size)
+      .attr("height", config.avatar.size)
+      .attr("patternUnits", "userSpaceOnUse")
+
+  var image = pattern.append("svg:image")
+      .attr("xlink:href", img_url)
+      .attr("width", config.avatar.size)
+      .attr("height", config.avatar.size)
+      .attr("x", 0)
+      .attr("y", 0);
+
+  var circle = svg.append("circle")
+          .attr("cx", config.avatar.size/2)
+          .attr("cy", config.avatar.size/2)
+          .attr("r", config.avatar.size/2)
+          .style("fill", "#fff")
+          .attr("transform", "translate(" + -(config.avatar.size/2) + "," + -(config.avatar.size/2) + ")")
+          .style("fill", "url(#grump_avatar)");
+
+}
+
+
+
+
+
+// Put event listeners into place
+window.addEventListener("DOMContentLoaded", function() {
+  // Grab elements, create settings, etc.
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var video = document.getElementById('video');
+        var mediaConfig =  { video: true };
+
+  // Put video listeners into place
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+            });
+        }
+
+        /* Legacy code below! */
+        else if(navigator.getUserMedia) { // Standard
+    navigator.getUserMedia(mediaConfig, function(stream) {
+      video.src = stream;
+      video.play();
+    }, errBack);
+  } else if(navigator.webkitGetUserMedia) { // WebKit-prefixed
+    navigator.webkitGetUserMedia(mediaConfig, function(stream){
+      video.src = window.webkitURL.createObjectURL(stream);
+      video.play();
+    }, errBack);
+  } else if(navigator.mozGetUserMedia) { // Mozilla-prefixed
+    navigator.mozGetUserMedia(mediaConfig, function(stream){
+      video.src = window.URL.createObjectURL(stream);
+      video.play();
+    }, errBack);
+  }
+
+  // Trigger photo take
+  document.getElementById('snap').addEventListener('click', function() {
+    context.drawImage(video, 0, 0, 640, 480);
+  });
+
+
+  $('#form').on('submit', function (event) {
+    event.preventDefault()
+
+    var $this      = $(this),
+        activities = $this.find('.activity')
+
+    var data = [];
+
+    $.each( activities, function(i, a) {
+
+      var activity = $(a).find('.input--activity').val(),
+          hours    = $(a).find('.input--hours').val()
+
+      data.push({
+        label: activity,
+        value: hours
+      })
+    })
+
+
+    // empty chart svg
+    $('#chart').empty()
+
+
+    // build chart
+    // buildChart( data )
+
+    // get image
+    canvas.toBlob(function(blob) {
+      var newImg = document.createElement("img"),
+          url = URL.createObjectURL(blob);
+
+      newImg.onload = function() {
+        // no longer need to read the blob so it's revoked
+        URL.revokeObjectURL(url);
+      };
+
+      newImg.src = url;
+      // document.body.appendChild(newImg);
+      buildChart( data, url )
+    });
+
+  })
+
+
+}, false);
+
+
+
+</script>
+
+</body>
+</html>
